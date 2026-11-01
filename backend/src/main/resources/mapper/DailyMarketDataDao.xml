@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zht.dao.DailyMarketDataDao">
+
+    <insert id="batchUpsert">
+        insert into daily_market_data
+        (stock_code, trade_date, pe, pb, pct_chg, ev, mkt_cap_float,
+        total_shares, share_issuing_mkt, maxup, maxdown, chg,
+        vwap, volume, amt, turn, vol_ratio, high, low, open,
+        close, pre_close, adjfactor, create_time, update_time)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.stockCode}, #{item.tradeDate}, #{item.pe}, #{item.pb}, #{item.pctChg}, #{item.ev}, #{item.mktCapFloat},
+            #{item.totalShares}, #{item.shareIssuingMkt}, #{item.maxup}, #{item.maxdown}, #{item.chg},
+            #{item.vwap}, #{item.volume}, #{item.amt}, #{item.turn}, #{item.volRatio}, #{item.high}, #{item.low}, #{item.open},
+            #{item.close}, #{item.preClose}, #{item.adjfactor}, #{item.createTime}, #{item.updateTime})
+        </foreach>
+        on duplicate key update
+        pe = values(pe),
+        pb = values(pb),
+        pct_chg = values(pct_chg),
+        ev = values(ev),
+        mkt_cap_float = values(mkt_cap_float),
+        total_shares = values(total_shares),
+        share_issuing_mkt = values(share_issuing_mkt),
+        maxup = values(maxup),
+        maxdown = values(maxdown),
+        chg = values(chg),
+        vwap = values(vwap),
+        volume = values(volume),
+        amt = values(amt),
+        turn = values(turn),
+        vol_ratio = values(vol_ratio),
+        high = values(high),
+        low = values(low),
+        open = values(open),
+        close = values(close),
+        pre_close = values(pre_close),
+        adjfactor = values(adjfactor),
+        update_time = values(update_time)
+    </insert>
+
+    <delete id="deleteByTradeDateBefore">
+        delete from daily_market_data
+        where trade_date &lt; #{date}
+    </delete>
+
+    <delete id="deleteByStockCodesAndTradeDateBefore">
+        delete from daily_market_data
+        where trade_date &lt; #{date}
+        and stock_code in
+        <foreach collection="stockCodes" item="code" open="(" separator="," close=")">
+            #{code}
+        </foreach>
+    </delete>
+
+    <select id="selectByStockCodesAndDateRange" resultType="com.zht.entity.DailyMarketData">
+        select * from daily_market_data
+        where stock_code in
+        <foreach collection="stockCodes" item="code" open="(" separator="," close=")">
+            #{code}
+        </foreach>
+        and trade_date between #{startDate} and #{endDate}
+        order by stock_code, trade_date
+    </select>
+
+    <select id="selectByStockCodeAndDateRange" resultType="com.zht.entity.DailyMarketData">
+        SELECT
+            trade_date,
+            stock_code,
+            pe,
+            pb,
+            pct_chg,
+            ev,
+            mkt_cap_float,
+            total_shares,
+            share_issuing_mkt,
+            chg,
+            vwap,
+            volume,
+            amt,
+            turn,
+            vol_ratio,
+            high,
+            low,
+            open,
+            close,
+            pre_close,
+            adjfactor
+        FROM daily_market_data
+        WHERE stock_code = #{stockCode}
+          AND trade_date BETWEEN #{startDate} AND #{endDate}
+        ORDER BY trade_date ASC
+    </select>
+
+</mapper>

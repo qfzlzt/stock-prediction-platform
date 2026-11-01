@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zht.dao.RealtimeMarketDataDao">
+
+    <!-- 批量插入或更新（使用 ON DUPLICATE KEY UPDATE 避免死锁） -->
+    <insert id="batchUpsert">
+        insert into realtime_market_data
+        (stockcode, latestprice, pricechange, pricechangerate, averageprice, totalvolume,
+        turnover, turnoverrate, volumeratio, highestprice, lowestprice, openingprice,
+        precloseprice, closeprice, adjfactor, datatimestamp, createdat, updatedat)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.stockcode}, #{item.latestprice}, #{item.pricechange}, #{item.pricechangerate},
+            #{item.averageprice}, #{item.totalvolume}, #{item.turnover}, #{item.turnoverrate},
+            #{item.volumeratio}, #{item.highestprice}, #{item.lowestprice}, #{item.openingprice},
+            #{item.precloseprice}, #{item.closeprice}, #{item.adjfactor}, #{item.datatimestamp},
+            #{item.createdat}, #{item.updatedat})
+        </foreach>
+        on duplicate key update
+        latestprice = values(latestprice),
+        pricechange = values(pricechange),
+        pricechangerate = values(pricechangerate),
+        averageprice = values(averageprice),
+        totalvolume = values(totalvolume),
+        turnover = values(turnover),
+        turnoverrate = values(turnoverrate),
+        volumeratio = values(volumeratio),
+        highestprice = values(highestprice),
+        lowestprice = values(lowestprice),
+        openingprice = values(openingprice),
+        precloseprice = values(precloseprice),
+        closeprice = values(closeprice),
+        adjfactor = values(adjfactor),
+        updatedat = values(updatedat)
+    </insert>
+
+    <!-- 分批删除，减少锁范围 -->
+    <delete id="deleteByStockCodesAndTimestampBeforeWithLimit">
+        delete from realtime_market_data
+        where dataTimestamp &lt; #{timestamp}
+        and stockCode in
+        <foreach collection="stockCodes" item="code" open="(" separator="," close=")">
+            #{code}
+        </foreach>
+        limit #{limit}
+    </delete>
+
+    <!-- 获取最新时间戳的所有股票实时数据 -->
+    <select id="selectLatestSnapshot" resultType="com.zht.entity.RealtimeMarketData">
+        SELECT t.* FROM realtime_market_data t
+        INNER JOIN (
+        SELECT stockCode, MAX(dataTimestamp) as maxTimestamp
+        FROM realtime_market_data
+        <if test="stockCodes != null and stockCodes.size() > 0">
+            WHERE stockCode IN
+            <foreach collection="stockCodes" item="code" open="(" separator="," close=")">
+                #{code}
+            </foreach>
+        </if>
+        GROUP BY stockCode
+        ) latest ON t.stockCode = latest.stockCode AND t.dataTimestamp = latest.maxTimestamp
+    </select>
+
+</mapper>

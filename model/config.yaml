@@ -1,0 +1,78 @@
+data:
+  base_dir: ../data
+  stock_glob: '*_with_indicators.xlsx'
+  industry_file: 21公司行业分类.xlsx
+  market_file: 科创板收盘价.xlsx
+walk_forward:
+  windows:
+  - train_end: '2023-12-31'
+    valid_end: '2024-06-30'
+    test_end: '2024-12-31'
+  - train_end: '2024-06-30'
+    valid_end: '2024-12-31'
+    test_end: '2025-06-30'
+  - train_end: '2024-12-31'
+    valid_end: '2025-06-30'
+    test_end: '2025-12-31'
+  - train_end: '2025-06-30'
+    valid_end: '2025-12-31'
+    test_end: '2026-03-18'
+label:
+  horizon: 5
+  n_classes: 2
+  quantile_window: 252
+  neutral_ret_band: 0.005
+  neutral_filter_train: true
+  neutral_filter_splits:
+  - train
+strategy:
+  buy_threshold: 0.52
+  sell_threshold: 0.52
+  fee_rate: 0.0005
+  slippage: 0.0005
+model:
+  random_state: 42
+  binary_threshold: 0.24
+  threshold_objective: combo
+  lgbm:
+    n_estimators: 700
+    learning_rate: 0.03
+    num_leaves: 63
+    min_child_samples: 80
+    subsample: 0.8
+    colsample_bytree: 0.8
+  lstm:
+    lookback: 20
+    hidden_size: 64
+    num_layers: 2
+    dropout: 0.2
+    lr: 0.001
+    batch_size: 128
+    epochs: 25
+    patience: 4
+  gnn:
+    hidden_size: 128
+    dropout: 0.25
+    lr: 0.0008
+    use_gate: false
+    use_relations:
+    - industry
+    - corr
+    - valuation_sim
+    relation_weights:
+    - 0.4
+    - 0.3
+    - 0.3
+    epochs: 80
+    patience: 8
+    corr_window: 60
+    corr_threshold: 0.2
+    binary_threshold: 0.404
+    threshold_objective: combo
+    dynamic_threshold: false
+    calibration: none
+    vol_window: 60
+    vol_threshold: 0.2
+    valuation_threshold: 0.6
+    weight_decay: 0.0001
+    rank_lambda: 0.4

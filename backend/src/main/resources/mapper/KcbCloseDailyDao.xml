@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zht.dao.KcbCloseDailyDao">
+
+    <select id="selectMaxTradeDate" resultType="java.util.Date">
+        SELECT MAX(trade_date)
+        FROM kcb_close_daily
+    </select>
+
+    <select id="selectByDateRange" resultType="com.zht.entity.KcbCloseDaily">
+        SELECT *
+        FROM kcb_close_daily
+        WHERE trade_date BETWEEN #{startDate} AND #{endDate}
+        ORDER BY trade_date ASC
+    </select>
+
+    <insert id="upsert" parameterType="com.zht.entity.KcbCloseDaily">
+        INSERT INTO kcb_close_daily
+            (trade_date, close_arithmetic, close_float_weighted, close_total_weighted, stock_count, created_at, updated_at)
+        VALUES
+            (#{item.tradeDate}, #{item.closeArithmetic}, #{item.closeFloatWeighted}, #{item.closeTotalWeighted}, #{item.stockCount}, NOW(), NOW())
+        ON DUPLICATE KEY UPDATE
+            close_arithmetic = VALUES(close_arithmetic),
+            close_float_weighted = VALUES(close_float_weighted),
+            close_total_weighted = VALUES(close_total_weighted),
+            stock_count = VALUES(stock_count),
+            updated_at = NOW()
+    </insert>
+
+</mapper>

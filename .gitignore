@@ -1,0 +1,41 @@
+# Dependencies, build output and local settings
+node_modules/
+dist/
+target/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.idea/
+.vscode/
+.claude/
+.codex/
+.DS_Store
+*.log
+*.iml
+.env
+.env.*
+!.env.example
+
+# Private datasets, trained artifacts, documents and archives
+data/
+outputs/
+*.xlsx
+*.xls
+*.csv
+*.parquet
+*.pkl
+*.pt
+*.pth
+*.zip
+*.rar
+*.7z
+*.pdf
+*.docx
+
+# Proprietary SDKs and binaries
+*.dll
+*.jar
+*.class
+backend/lib/
+backend/native/
